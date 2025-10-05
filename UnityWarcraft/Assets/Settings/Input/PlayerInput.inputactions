@@ -1,0 +1,47 @@
+{
+    "name": "PlayerInput",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "4a1e9f7a-c0c9-4e72-b2d1-8febd42b1a43",
+            "actions": [
+                { "name": "Move", "type": "Value", "id": "0fdff5f1-813e-49a8-a222-9e4b77fa1de7", "expectedControlType": "Vector2" },
+                { "name": "Look", "type": "Value", "id": "f21e1a7f-451e-4dfe-9010-37744d400596", "expectedControlType": "Vector2" },
+                { "name": "Jump", "type": "Button", "id": "b4c27ff0-6844-4fa0-a3ce-52e3d4cd9e51", "expectedControlType": "Button" },
+                { "name": "Fire", "type": "Button", "id": "4c9ac019-4fbe-4d40-af1f-e993b4f9e0fc", "expectedControlType": "Button" },
+                { "name": "Secondary", "type": "Button", "id": "d82db8bc-55d2-4f0e-9ef6-0c6caabf5964", "expectedControlType": "Button" },
+                { "name": "Reload", "type": "Button", "id": "faa67fd8-0726-4c61-b3a8-131541e4278f", "expectedControlType": "Button" },
+                { "name": "Sprint", "type": "Button", "id": "b23d13cf-23d7-4c12-a099-7fbecbfe0bf2", "expectedControlType": "Button" }
+            ],
+            "bindings": [
+                {
+                    "name": "WASD",
+                    "id": "78fa5f7a-9eb6-4d73-91a7-1783cfe1a099",
+                    "path": "2DVector",
+                    "actions": "Move",
+                    "isComposite": true
+                },
+                { "name": "up", "id": "b9bcd3f7-726f-4a28-bdc2-7b3750084dfa", "path": "<Keyboard>/w", "isPartOfComposite": true, "action": "Move" },
+                { "name": "down", "id": "4c3c8384-e11b-427e-86c0-74a0ce0f88dd", "path": "<Keyboard>/s", "isPartOfComposite": true, "action": "Move" },
+                { "name": "left", "id": "df2cc771-764f-407a-9f96-b93f97fb769f", "path": "<Keyboard>/a", "isPartOfComposite": true, "action": "Move" },
+                { "name": "right", "id": "9ac55e06-99f6-49ae-a046-9784b15c4f2c", "path": "<Keyboard>/d", "isPartOfComposite": true, "action": "Move" },
+                { "id": "fcd15672-fa4d-4b64-8d83-8ade407a30c3", "path": "<Mouse>/delta", "action": "Look" },
+                { "id": "f3f05ebd-123d-4db3-a8fd-aede9279b572", "path": "<Mouse>/leftButton", "action": "Fire" },
+                { "id": "c8a75b3f-4060-4089-820f-2e494553fd99", "path": "<Mouse>/rightButton", "action": "Secondary" },
+                { "id": "fcf7f4bc-2b3a-4bd4-9d3e-4095585dd30f", "path": "<Keyboard>/space", "action": "Jump" },
+                { "id": "7ec3ff3d-a8ef-4ae0-a5a6-1602043614e4", "path": "<Keyboard>/leftShift", "action": "Sprint" },
+                { "id": "85b7ac5a-f708-46b4-8d7d-88793783b0e3", "path": "<Keyboard>/r", "action": "Reload" }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Keyboard&Mouse",
+            "bindingGroup": "Keyboard&Mouse",
+            "devices": [
+                { "devicePath": "<Keyboard>", "isOptional": false },
+                { "devicePath": "<Mouse>", "isOptional": false }
+            ]
+        }
+    ]
+}
