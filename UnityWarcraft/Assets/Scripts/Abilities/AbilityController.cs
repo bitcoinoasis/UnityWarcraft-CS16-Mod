@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Warcraft.Characters;
 
 namespace Warcraft.Abilities
 {
@@ -9,9 +10,19 @@ namespace Warcraft.Abilities
         private readonly List<AbilitySlot> _slots = new();
         private RaceDefinition _currentRace;
         private int _currentLevel = 1;
+        private CharacterHealth _health;
+        private CharacterMotor _motor;
+        private CharacterCombat _combat;
 
         public event Action<AbilityDefinition> OnAbilityReady;
         public event Action<AbilityDefinition> OnAbilityTriggered;
+
+        private void Awake()
+        {
+            _health = GetComponent<CharacterHealth>();
+            _motor = GetComponent<CharacterMotor>();
+            _combat = GetComponent<CharacterCombat>();
+        }
 
         private void Update()
         {
@@ -53,6 +64,10 @@ namespace Warcraft.Abilities
                     }
 
                     _slots.Add(new AbilitySlot(ability, level));
+                    if (ability.EffectType == AbilityEffectType.Passive)
+                    {
+                        ApplyPassiveEffect(ability, level);
+                    }
                 }
             }
         }
@@ -77,6 +92,10 @@ namespace Warcraft.Abilities
                     var slot = new AbilitySlot(ability, level);
                     _slots.Add(slot);
                     OnAbilityReady?.Invoke(ability);
+                    if (ability.EffectType == AbilityEffectType.Passive)
+                    {
+                        ApplyPassiveEffect(ability, level);
+                    }
                 }
             }
 
@@ -96,10 +115,75 @@ namespace Warcraft.Abilities
                 return false;
             }
 
+            // Execute the ability effect
+            ExecuteAbilityEffect(slot.Definition, slot.Level);
+
             slot = slot.WithCooldown(slot.Definition.CooldownSeconds);
             _slots[slotIndex] = slot;
             OnAbilityTriggered?.Invoke(slot.Definition);
             return true;
+        }
+
+        private void ExecuteAbilityEffect(AbilityDefinition ability, int level)
+        {
+            var value = ability.GetScaledValue(level);
+            switch (ability.EffectType)
+            {
+                case AbilityEffectType.Heal:
+                    if (_health != null)
+                    {
+                        _health.Heal(value);
+                    }
+                    break;
+                case AbilityEffectType.SpeedBoost:
+                    if (_motor != null)
+                    {
+                        // Temporarily increase speed, e.g., for 5 seconds
+                        StartCoroutine(ApplySpeedBoost(value, 5f));
+                    }
+                    break;
+                case AbilityEffectType.DamageBoost:
+                    if (_combat != null)
+                    {
+                        // Temporarily increase damage, e.g., for 10 seconds
+                        StartCoroutine(ApplyDamageBoost(value, 10f));
+                    }
+                    break;
+                case AbilityEffectType.Passive:
+                    // Already applied on equip
+                    break;
+            }
+        }
+
+        private void ApplyPassiveEffect(AbilityDefinition ability, int level)
+        {
+            var value = ability.GetScaledValue(level);
+            switch (ability.EffectType)
+            {
+                case AbilityEffectType.Passive:
+                    // For example, increase max health or shield
+                    if (_health != null)
+                    {
+                        _health.Refill(_health.MaxHealth + value, _health.MaxShield);
+                    }
+                    break;
+            }
+        }
+
+        private System.Collections.IEnumerator ApplySpeedBoost(float multiplier, float duration)
+        {
+            // Assuming CharacterMotor has a speed multiplier field, but for now, just set sprinting
+            _motor?.SetSprinting(true);
+            yield return new WaitForSeconds(duration);
+            _motor?.SetSprinting(false);
+        }
+
+        private System.Collections.IEnumerator ApplyDamageBoost(float multiplier, float duration)
+        {
+            // For simplicity, just log; in real implementation, modify weapon damage
+            Debug.Log($"Damage boosted by {multiplier} for {duration} seconds");
+            yield return new WaitForSeconds(duration);
+            Debug.Log("Damage boost ended");
         }
 
         private readonly struct AbilitySlot

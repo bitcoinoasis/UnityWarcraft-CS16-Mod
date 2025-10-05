@@ -12,6 +12,14 @@ namespace Warcraft.Abilities
         GroundArea
     }
 
+    public enum AbilityEffectType
+    {
+        Passive,
+        Heal,
+        SpeedBoost,
+        DamageBoost
+    }
+
     [CreateAssetMenu(menuName = "Warcraft/Abilities/Ability Definition", fileName = "AbilityDefinition")]
     public class AbilityDefinition : ScriptableObject
     {
@@ -19,6 +27,7 @@ namespace Warcraft.Abilities
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
         [SerializeField] private AbilityTargetType targetType = AbilityTargetType.Passive;
+        [SerializeField] private AbilityEffectType effectType = AbilityEffectType.Passive;
         [SerializeField] private Sprite icon;
         [SerializeField, Min(0f)] private float cooldownSeconds = 10f;
         [SerializeField, Min(0f)] private float passiveValue;
@@ -28,6 +37,7 @@ namespace Warcraft.Abilities
         public string DisplayName => displayName;
         public string Description => description;
         public AbilityTargetType TargetType => targetType;
+        public AbilityEffectType EffectType => effectType;
         public Sprite Icon => icon;
         public float CooldownSeconds => cooldownSeconds;
         public float PassiveValue => passiveValue;

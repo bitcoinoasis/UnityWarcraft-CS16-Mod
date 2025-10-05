@@ -1,11 +1,13 @@
 #if UNITY_EDITOR
 using System.IO;
+using TMPro;
 using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using Warcraft.Abilities;
 using Warcraft.Bots;
 using Warcraft.Characters;
@@ -22,13 +24,17 @@ namespace Warcraft.EditorTools
         private const string MatchSettingsPath = "Assets/Data/Match/AutoMatchSettings.asset";
         private const string RaceCatalogPath = "Assets/Data/Races/AutoRaceCatalog.asset";
         private const string RaceAssetPath = "Assets/Data/Races/HumanRace.asset";
+        private const string OrcRaceAssetPath = "Assets/Data/Races/OrcRace.asset";
+        private const string AbilityHealPath = "Assets/Data/Races/Abilities/Heal.asset";
+        private const string AbilitySpeedBoostPath = "Assets/Data/Races/Abilities/SpeedBoost.asset";
+        private const string AbilityDamageBoostPath = "Assets/Data/Races/Abilities/DamageBoost.asset";
         private const string WeaponCatalogPath = "Assets/Data/Weapons/AutoWeaponCatalog.asset";
         private const string WeaponAssetPath = "Assets/Data/Weapons/AK47.asset";
         private const string BotLoadoutSetPath = "Assets/Data/Bots/AutoBotLoadouts.asset";
         private const string BotProfilePath = "Assets/Data/Bots/AutoBotProfile.asset";
         private const string BotPrefabPath = "Assets/Prefabs/Characters/AutoBot.prefab";
         private const string PlayerPrefabPath = "Assets/Prefabs/Characters/AutoPlayer.prefab";
-        private const string InputAssetPath = "Assets/Settings/Input/PlayerInput.inputactions";
+        private const string ProjectilePrefabPath = "Assets/Prefabs/Projectiles/Bullet.prefab";
 
         [MenuItem("Warcraft/Tools/Generate Iceworld Demo Scene", priority = 0)]
         public static void GenerateIceworldDemoScene()
@@ -56,12 +62,77 @@ namespace Warcraft.EditorTools
                 so.FindProperty("lore").stringValue = "Balanced race for prototype matches.";
             });
 
+            var healAbility = EnsureAsset<AbilityDefinition>(AbilityHealPath, so =>
+            {
+                so.FindProperty("displayName").stringValue = "Heal";
+                so.FindProperty("description").stringValue = "Restores health over time.";
+                so.FindProperty("targetType").enumValueIndex = (int)AbilityTargetType.Self;
+                so.FindProperty("effectType").enumValueIndex = (int)AbilityEffectType.Heal;
+                so.FindProperty("cooldownSeconds").floatValue = 15f;
+                so.FindProperty("passiveValue").floatValue = 50f;
+            });
+
+            var damageBoostAbility = EnsureAsset<AbilityDefinition>(AbilityDamageBoostPath, so =>
+            {
+                so.FindProperty("displayName").stringValue = "Berserk";
+                so.FindProperty("description").stringValue = "Temporarily increases damage output.";
+                so.FindProperty("targetType").enumValueIndex = (int)AbilityTargetType.Self;
+                so.FindProperty("effectType").enumValueIndex = (int)AbilityEffectType.DamageBoost;
+                so.FindProperty("cooldownSeconds").floatValue = 25f;
+                so.FindProperty("passiveValue").floatValue = 2f; // multiplier
+            });
+
+            var orcRaceDefinition = EnsureAsset<RaceDefinition>(OrcRaceAssetPath, so =>
+            {
+                so.FindProperty("displayName").stringValue = "Orc";
+                so.FindProperty("lore").stringValue = "Aggressive race with high damage abilities.";
+            });
+
+            // Set up Orc levels
+            var orcLevelsProperty = new SerializedObject(orcRaceDefinition).FindProperty("levels");
+            orcLevelsProperty.ClearArray();
+            orcLevelsProperty.InsertArrayElementAtIndex(0);
+            var orcLevel1 = orcLevelsProperty.GetArrayElementAtIndex(0);
+            orcLevel1.FindPropertyRelative("level").intValue = 1;
+            orcLevel1.FindPropertyRelative("requiredXp").floatValue = 100f;
+            var orcAbilities1 = orcLevel1.FindPropertyRelative("abilities");
+            orcAbilities1.ClearArray();
+            orcAbilities1.InsertArrayElementAtIndex(0);
+            orcAbilities1.GetArrayElementAtIndex(0).objectReferenceValue = damageBoostAbility;
+
+            new SerializedObject(orcRaceDefinition).ApplyModifiedProperties();
+
+            // Set up race levels with abilities
+            var levelsProperty = new SerializedObject(raceDefinition).FindProperty("levels");
+            levelsProperty.ClearArray();
+            levelsProperty.InsertArrayElementAtIndex(0);
+            var level1 = levelsProperty.GetArrayElementAtIndex(0);
+            level1.FindPropertyRelative("level").intValue = 1;
+            level1.FindPropertyRelative("requiredXp").floatValue = 100f;
+            var abilities1 = level1.FindPropertyRelative("abilities");
+            abilities1.ClearArray();
+            abilities1.InsertArrayElementAtIndex(0);
+            abilities1.GetArrayElementAtIndex(0).objectReferenceValue = healAbility;
+
+            levelsProperty.InsertArrayElementAtIndex(1);
+            var level2 = levelsProperty.GetArrayElementAtIndex(1);
+            level2.FindPropertyRelative("level").intValue = 2;
+            level2.FindPropertyRelative("requiredXp").floatValue = 200f;
+            var abilities2 = level2.FindPropertyRelative("abilities");
+            abilities2.ClearArray();
+            abilities2.InsertArrayElementAtIndex(0);
+            abilities2.GetArrayElementAtIndex(0).objectReferenceValue = speedBoostAbility;
+
+            new SerializedObject(raceDefinition).ApplyModifiedProperties();
+
             var raceCatalog = EnsureAsset<RaceCatalog>(RaceCatalogPath, so =>
             {
                 var racesProperty = so.FindProperty("races");
                 racesProperty.ClearArray();
                 racesProperty.InsertArrayElementAtIndex(0);
                 racesProperty.GetArrayElementAtIndex(0).objectReferenceValue = raceDefinition;
+                racesProperty.InsertArrayElementAtIndex(1);
+                racesProperty.GetArrayElementAtIndex(1).objectReferenceValue = orcRaceDefinition;
             });
 
             var weaponDefinition = EnsureAsset<WeaponDefinition>(WeaponAssetPath, so =>
@@ -72,6 +143,13 @@ namespace Warcraft.EditorTools
                 so.FindProperty("magazineSize").intValue = 30;
                 so.FindProperty("reloadSeconds").floatValue = 2.1f;
                 so.FindProperty("fireMode").enumValueIndex = (int)WeaponFireMode.FullAuto;
+                so.FindProperty("recoilAmount").floatValue = 0.5f;
+            });
+
+            var projectilePrefab = EnsureProjectilePrefab();
+            SetSerialized(weaponDefinition, so =>
+            {
+                so.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
             });
 
             var weaponCatalog = EnsureAsset<WeaponCatalog>(WeaponCatalogPath, so =>
@@ -82,12 +160,12 @@ namespace Warcraft.EditorTools
                 weaponsProperty.GetArrayElementAtIndex(0).objectReferenceValue = weaponDefinition;
             });
 
-            var botProfile = EnsureAsset<BotProfile>(BotProfilePath, so =>
+            var orcBotProfile = EnsureAsset<BotProfile>(BotProfilePath.Replace("AutoBotProfile", "OrcBotProfile"), so =>
             {
-                so.FindProperty("displayName").stringValue = "Auto Bot";
-                so.FindProperty("race").objectReferenceValue = raceDefinition;
+                so.FindProperty("displayName").stringValue = "Orc Bot";
+                so.FindProperty("race").objectReferenceValue = orcRaceDefinition;
                 so.FindProperty("primaryWeapon").objectReferenceValue = weaponDefinition;
-                so.FindProperty("preferredTeam").enumValueIndex = (int)Team.A;
+                so.FindProperty("preferredTeam").enumValueIndex = (int)Team.B;
             });
 
             var botLoadoutSet = EnsureAsset<BotLoadoutSet>(BotLoadoutSetPath, so =>
@@ -96,6 +174,8 @@ namespace Warcraft.EditorTools
                 profilesProperty.ClearArray();
                 profilesProperty.InsertArrayElementAtIndex(0);
                 profilesProperty.GetArrayElementAtIndex(0).objectReferenceValue = botProfile;
+                profilesProperty.InsertArrayElementAtIndex(1);
+                profilesProperty.GetArrayElementAtIndex(1).objectReferenceValue = orcBotProfile;
             });
 
             var botPrefab = EnsureBotPrefab();
@@ -140,6 +220,9 @@ namespace Warcraft.EditorTools
                 PrefabUtility.InstantiatePrefab(playerPrefab);
             }
 
+            var hudCanvas = CreateHUDCanvas();
+            var hudManager = hudCanvas.AddComponent<HUDManager>();
+
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -151,9 +234,11 @@ namespace Warcraft.EditorTools
         {
             Directory.CreateDirectory("Assets/Data/Match");
             Directory.CreateDirectory("Assets/Data/Races");
+            Directory.CreateDirectory("Assets/Data/Races/Abilities");
             Directory.CreateDirectory("Assets/Data/Weapons");
             Directory.CreateDirectory("Assets/Data/Bots");
             Directory.CreateDirectory("Assets/Prefabs/Characters");
+            Directory.CreateDirectory("Assets/Prefabs/Projectiles");
             Directory.CreateDirectory("Assets/Scenes");
         }
 
@@ -272,6 +357,12 @@ namespace Warcraft.EditorTools
             camera.transform.SetParent(cameraPivot, false);
             camera.transform.localPosition = Vector3.zero;
 
+            root.AddComponent<CameraRig>();
+            SetSerialized(root.GetComponent<CameraRig>(), so =>
+            {
+                so.FindProperty("cameraTransform").objectReferenceValue = camera.transform;
+            });
+
             SetSerialized(root.GetComponent<CharacterMotor>(), so =>
             {
                 so.FindProperty("cameraPivot").objectReferenceValue = cameraPivot;
@@ -293,6 +384,84 @@ namespace Warcraft.EditorTools
             var savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
             Object.DestroyImmediate(root);
             return savedPrefab;
+        }
+
+        private static GameObject EnsureProjectilePrefab()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ProjectilePrefabPath);
+            if (prefab != null)
+            {
+                return prefab;
+            }
+
+            var root = new GameObject("Bullet");
+            root.AddComponent<Projectile>();
+            var collider = root.AddComponent<SphereCollider>();
+            collider.isTrigger = true;
+            collider.radius = 0.05f;
+
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            visual.name = "Visual";
+            visual.transform.SetParent(root.transform, false);
+            visual.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            Object.DestroyImmediate(visual.GetComponent<SphereCollider>());
+
+            var savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, ProjectilePrefabPath);
+            Object.DestroyImmediate(root);
+            return savedPrefab;
+        }
+
+        private static GameObject CreateHUDCanvas()
+        {
+            var canvas = new GameObject("HUDCanvas");
+            var canvasComponent = canvas.AddComponent<Canvas>();
+            canvasComponent.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.AddComponent<UnityEngine.UI.CanvasScaler>();
+            canvas.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+            var healthText = CreateTMPText("HealthText", canvas.transform, new Vector2(10, -10), "Health: 100");
+            var shieldText = CreateTMPText("ShieldText", canvas.transform, new Vector2(10, -40), "Shield: 0");
+            var xpText = CreateTMPText("XPText", canvas.transform, new Vector2(10, -70), "XP: 0");
+            var roundTimerText = CreateTMPText("RoundTimerText", canvas.transform, new Vector2(-10, -10), "Time: 180", TextAlignmentOptions.TopRight);
+
+            var hudManager = canvas.AddComponent<HUDManager>();
+            SetSerialized(hudManager, so =>
+            {
+                so.FindProperty("healthText").objectReferenceValue = healthText;
+                so.FindProperty("shieldText").objectReferenceValue = shieldText;
+                so.FindProperty("xpText").objectReferenceValue = xpText;
+                so.FindProperty("roundTimerText").objectReferenceValue = roundTimerText;
+            });
+
+            return canvas;
+        }
+
+        private static TMP_Text CreateTMPText(string name, Transform parent, Vector2 anchoredPosition, string text, TextAlignmentOptions alignment = TextAlignmentOptions.TopLeft)
+        {
+            var textObj = new GameObject(name);
+            textObj.transform.SetParent(parent, false);
+            var rectTransform = textObj.AddComponent<RectTransform>();
+            rectTransform.anchoredPosition = anchoredPosition;
+            rectTransform.sizeDelta = new Vector2(200, 30);
+            if (alignment == TextAlignmentOptions.TopRight)
+            {
+                rectTransform.anchorMin = new Vector2(1, 1);
+                rectTransform.anchorMax = new Vector2(1, 1);
+                rectTransform.pivot = new Vector2(1, 1);
+            }
+            else
+            {
+                rectTransform.anchorMin = new Vector2(0, 1);
+                rectTransform.anchorMax = new Vector2(0, 1);
+                rectTransform.pivot = new Vector2(0, 1);
+            }
+
+            var tmpText = textObj.AddComponent<TMP_Text>();
+            tmpText.text = text;
+            tmpText.fontSize = 24;
+            tmpText.color = Color.white;
+            tmpText.alignment = alignment;
+            return tmpText;
         }
     }
 }

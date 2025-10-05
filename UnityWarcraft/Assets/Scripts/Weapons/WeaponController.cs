@@ -14,6 +14,15 @@ namespace Warcraft.Weapons
         private int _currentAmmo;
         private bool _isReloading;
         private float _cooldownTimer;
+        private CameraRig _cameraRig;
+
+        public int CurrentAmmo => _currentAmmo;
+        public bool IsReloading => _isReloading;
+
+        private void Awake()
+        {
+            _cameraRig = GetComponentInParent<CameraRig>();
+        }
 
         public void Initialize(WeaponDefinition weaponDefinition)
         {
@@ -44,7 +53,16 @@ namespace Warcraft.Weapons
             }
 
             ConsumeAmmo();
-            FireRay();
+            if (definition.ProjectilePrefab != null)
+            {
+                FireProjectile();
+            }
+            else
+            {
+                FireRay();
+            }
+
+            _cameraRig?.ApplyRecoil(definition.RecoilAmount);
         }
 
         public void FireSecondary()
@@ -99,6 +117,19 @@ namespace Warcraft.Weapons
             {
                 var health = hit.collider.GetComponentInParent<CharacterHealth>();
                 health?.ApplyDamage(definition.Damage);
+            }
+        }
+
+        private void FireProjectile()
+        {
+            var origin = muzzle != null ? muzzle.position : transform.position;
+            var direction = muzzle != null ? muzzle.forward : transform.forward;
+
+            var projectile = Instantiate(definition.ProjectilePrefab, origin, Quaternion.LookRotation(direction));
+            var projectileScript = projectile.GetComponent<Projectile>();
+            if (projectileScript != null)
+            {
+                projectileScript.Initialize(definition.Damage, maxRange, hitMask);
             }
         }
 
