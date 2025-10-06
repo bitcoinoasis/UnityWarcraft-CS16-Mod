@@ -45,7 +45,7 @@ namespace Warcraft.Core
                 ServiceRegistry.Register(botLoadoutSet);
             }
 
-            var xpService = new XPService();
+            var xpService = gameObject.AddComponent<XPService>();
             ServiceRegistry.Register(xpService);
 
             if (matchManager == null)

@@ -190,6 +190,9 @@ namespace Warcraft.EditorTools
             environmentRoot.AddComponent<NavMeshSurface>();
             environmentRoot.AddComponent<NavMeshRuntimeBaker>();
 
+            // Add spawn points
+            CreateSpawnPoints(environmentRoot.transform);
+
             var botsContainer = new GameObject("Bots").transform;
             var botManager = new GameObject("BotManager").AddComponent<BotManager>();
             SetSerialized(botManager, so =>
@@ -462,6 +465,31 @@ namespace Warcraft.EditorTools
             tmpText.color = Color.white;
             tmpText.alignment = alignment;
             return tmpText;
+        }
+
+        private static void CreateSpawnPoints(Transform environmentRoot)
+        {
+            // Team A spawns (left side)
+            var spawnA1 = new GameObject("SpawnPoint_A_1").AddComponent<TeamSpawnPoint>();
+            spawnA1.transform.SetParent(environmentRoot);
+            spawnA1.transform.position = new Vector3(-20, 0, 0);
+            spawnA1.Team = Team.A;
+
+            var spawnA2 = new GameObject("SpawnPoint_A_2").AddComponent<TeamSpawnPoint>();
+            spawnA2.transform.SetParent(environmentRoot);
+            spawnA2.transform.position = new Vector3(-20, 0, 10);
+            spawnA2.Team = Team.A;
+
+            // Team B spawns (right side)
+            var spawnB1 = new GameObject("SpawnPoint_B_1").AddComponent<TeamSpawnPoint>();
+            spawnB1.transform.SetParent(environmentRoot);
+            spawnB1.transform.position = new Vector3(20, 0, 0);
+            spawnB1.Team = Team.B;
+
+            var spawnB2 = new GameObject("SpawnPoint_B_2").AddComponent<TeamSpawnPoint>();
+            spawnB2.transform.SetParent(environmentRoot);
+            spawnB2.transform.position = new Vector3(20, 0, -10);
+            spawnB2.Team = Team.B;
         }
     }
 }
