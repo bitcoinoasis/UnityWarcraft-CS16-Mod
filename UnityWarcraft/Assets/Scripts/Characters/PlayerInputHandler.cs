@@ -25,69 +25,75 @@ namespace Warcraft.Characters
             _abilityController = GetComponent<AbilityController>();
         }
 
-        public void OnMove(InputValue value)
+        public void OnMove(InputAction.CallbackContext context)
         {
-            var move = value.Get<Vector2>();
-            _motor.SetMoveInput(move);
+            if (context.performed)
+            {
+                var move = context.ReadValue<Vector2>();
+                _motor.SetMoveInput(move);
+            }
         }
 
-        public void OnLook(InputValue value)
+        public void OnLook(InputAction.CallbackContext context)
         {
-            var look = value.Get<Vector2>();
-            _motor.SetLookInput(look);
+            if (context.performed)
+            {
+                var look = context.ReadValue<Vector2>();
+                _motor.SetLookInput(look);
+            }
         }
 
-        public void OnJump(InputValue value)
+        public void OnJump(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _motor.Jump();
             }
         }
 
-        public void OnFire(InputValue value)
+        public void OnFire(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _combat.FirePrimary();
             }
         }
 
-        public void OnAltFire(InputValue value)
+        public void OnAltFire(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _combat.FireSecondary();
             }
         }
 
-        public void OnReload(InputValue value)
+        public void OnReload(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _combat.Reload();
             }
         }
 
-        public void OnAbility1(InputValue value)
+        public void OnAbility1(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _abilityController.UseAbility(0);
             }
         }
 
-        public void OnAbility2(InputValue value)
+        public void OnAbility2(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _abilityController.UseAbility(1);
             }
         }
 
-        public void OnAbility3(InputValue value)
+        public void OnAbility3(InputAction.CallbackContext context)
         {
-            if (value.isPressed)
+            if (context.performed)
             {
                 _abilityController.UseAbility(2);
             }
