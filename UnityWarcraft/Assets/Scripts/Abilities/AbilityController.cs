@@ -197,7 +197,7 @@ namespace Warcraft.Abilities
 
             public AbilityDefinition Definition { get; }
             public int Level { get; }
-            public float CooldownRemaining { get; init; }
+            public float CooldownRemaining { get; set; }
             public bool IsOnCooldown => CooldownRemaining > 0f;
 
             public AbilitySlot WithCooldown(float seconds)
