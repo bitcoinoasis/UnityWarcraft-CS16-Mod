@@ -188,24 +188,21 @@ namespace Warcraft.Abilities
 
         private readonly struct AbilitySlot
         {
-            public AbilitySlot(AbilityDefinition definition, int level)
+            public AbilitySlot(AbilityDefinition definition, int level, float cooldown = 0f)
             {
                 Definition = definition;
                 Level = level;
-                CooldownRemaining = 0f;
+                CooldownRemaining = cooldown;
             }
 
             public AbilityDefinition Definition { get; }
             public int Level { get; }
-            public float CooldownRemaining { get; set; }
+            public readonly float CooldownRemaining;
             public bool IsOnCooldown => CooldownRemaining > 0f;
 
             public AbilitySlot WithCooldown(float seconds)
             {
-                return new AbilitySlot(Definition, Level)
-                {
-                    CooldownRemaining = Mathf.Max(0f, seconds)
-                };
+                return new AbilitySlot(Definition, Level, Mathf.Max(0f, seconds));
             }
         }
     }
