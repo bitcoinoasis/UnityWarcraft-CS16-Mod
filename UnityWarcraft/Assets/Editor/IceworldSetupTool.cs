@@ -187,8 +187,8 @@ namespace Warcraft.EditorTools
             var environmentRoot = new GameObject("EnvironmentRoot");
             var builder = environmentRoot.AddComponent<IceworldMapBuilder>();
             builder.Build();
-            environmentRoot.AddComponent<NavMeshSurface>();
-            environmentRoot.AddComponent<NavMeshRuntimeBaker>();
+            // environmentRoot.AddComponent<NavMeshSurface>();
+            // environmentRoot.AddComponent<NavMeshRuntimeBaker>();
 
             // Add spawn points
             CreateSpawnPoints(environmentRoot.transform);
