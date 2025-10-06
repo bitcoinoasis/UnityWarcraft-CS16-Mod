@@ -36,7 +36,7 @@ namespace Warcraft.EditorTools
         private const string PlayerPrefabPath = "Assets/Prefabs/Characters/AutoPlayer.prefab";
         private const string ProjectilePrefabPath = "Assets/Prefabs/Projectiles/Bullet.prefab";
 
-        [MenuItem("Warcraft/Tools/Generate Iceworld Demo Scene", priority = 0)]
+        [MenuItem("Tools/Warcraft/Generate Iceworld Demo Scene", priority = 0)]
         public static void GenerateIceworldDemoScene()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
