@@ -422,10 +422,10 @@ namespace Warcraft.EditorTools
             canvas.AddComponent<UnityEngine.UI.CanvasScaler>();
             canvas.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
-            var healthText = CreateTMPText("HealthText", canvas.transform, new Vector2(10, -10), "Health: 100");
-            var shieldText = CreateTMPText("ShieldText", canvas.transform, new Vector2(10, -40), "Shield: 0");
-            var xpText = CreateTMPText("XPText", canvas.transform, new Vector2(10, -70), "XP: 0");
-            var roundTimerText = CreateTMPText("RoundTimerText", canvas.transform, new Vector2(-10, -10), "Time: 180", TextAlignmentOptions.TopRight);
+            var healthText = CreateText("HealthText", canvas.transform, new Vector2(10, -10), "Health: 100");
+            var shieldText = CreateText("ShieldText", canvas.transform, new Vector2(10, -40), "Shield: 0");
+            var xpText = CreateText("XPText", canvas.transform, new Vector2(10, -70), "XP: 0");
+            var roundTimerText = CreateText("RoundTimerText", canvas.transform, new Vector2(-10, -10), "Time: 180", TextAnchor.UpperRight);
 
             var hudManager = canvas.AddComponent<HUDManager>();
             SetSerialized(hudManager, so =>
@@ -439,14 +439,14 @@ namespace Warcraft.EditorTools
             return canvas;
         }
 
-        private static TMP_Text CreateTMPText(string name, Transform parent, Vector2 anchoredPosition, string text, TextAlignmentOptions alignment = TextAlignmentOptions.TopLeft)
+        private static Text CreateText(string name, Transform parent, Vector2 anchoredPosition, string text, TextAnchor alignment = TextAnchor.UpperLeft)
         {
             var textObj = new GameObject(name);
             textObj.transform.SetParent(parent, false);
             var rectTransform = textObj.AddComponent<RectTransform>();
             rectTransform.anchoredPosition = anchoredPosition;
             rectTransform.sizeDelta = new Vector2(200, 30);
-            if (alignment == TextAlignmentOptions.TopRight)
+            if (alignment == TextAnchor.UpperRight)
             {
                 rectTransform.anchorMin = new Vector2(1, 1);
                 rectTransform.anchorMax = new Vector2(1, 1);
@@ -459,12 +459,12 @@ namespace Warcraft.EditorTools
                 rectTransform.pivot = new Vector2(0, 1);
             }
 
-            var tmpText = textObj.AddComponent<TMP_Text>();
-            tmpText.text = text;
-            tmpText.fontSize = 24;
-            tmpText.color = Color.white;
-            tmpText.alignment = alignment;
-            return tmpText;
+            var textComponent = textObj.AddComponent<Text>();
+            textComponent.text = text;
+            textComponent.fontSize = 24;
+            textComponent.color = Color.white;
+            textComponent.alignment = alignment;
+            return textComponent;
         }
 
         private static void CreateSpawnPoints(Transform environmentRoot)

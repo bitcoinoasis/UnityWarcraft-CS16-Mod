@@ -1,5 +1,5 @@
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Warcraft.Characters;
 using Warcraft.Match;
 
@@ -7,10 +7,10 @@ namespace Warcraft.UI
 {
     public class HUDManager : MonoBehaviour
     {
-        [SerializeField] private TMP_Text healthText;
-        [SerializeField] private TMP_Text shieldText;
-        [SerializeField] private TMP_Text xpText;
-        [SerializeField] private TMP_Text roundTimerText;
+        [SerializeField] private Text healthText;
+        [SerializeField] private Text shieldText;
+        [SerializeField] private Text xpText;
+        [SerializeField] private Text roundTimerText;
 
         private CharacterHealth _playerHealth;
         private MatchManager _matchManager;
